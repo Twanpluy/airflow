@@ -3,3 +3,4 @@
 /airflow.cfg
 /logs
 /webserver_config.py
+/dags/config
