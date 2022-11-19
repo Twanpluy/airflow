@@ -4,3 +4,4 @@
 /logs
 /webserver_config.py
 /dags/config
+/dags/__pycache__
