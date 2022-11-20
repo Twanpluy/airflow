@@ -13,7 +13,10 @@ from airflow.providers.http.operators.http import SimpleHttpOperator
 from airflow.providers.http.sensors.http import HttpSensor
 from airflow.operators.python import PythonOperator
 import toml
-
+from ebaysdk.finding import Connection 
+from ebaysdk.exception import ConnectionError
+#replace with airflow connetion tooling
+FILEPATH = f"datafiles/"
 #API GET     
 # API_KEY = config["ebay_api_keys_prod"]["app_id"]
 # DEFAULT ARGS
@@ -31,11 +34,38 @@ def get_api_key():
     return api_key
 
 def search_ebay(ti):
-    api_key = ti.xcom_pull(task_ids=['task1'])
-    print(f'successfully pulled api key: {api_key}')
-    return api_key
+    api_key = ti.xcom_pull(task_ids=['get_api_key'])
+    try:
+        api = Connection(appid=api_key[0], config_file=None, siteid='EBAY-NL')
+        response = api.execute('findItemsByKeywords', {'keywords': 'moog 32',})
+        dump = response.dict()
+        return dump
+    
+    except ConnectionError as e:
+        print(e)
+        print(e.response.dict())
+  
+def ebay_to_json_file(ti):
+    date = datetime.now().strftime("%Y-%m-%d")
+    date = date.replace('-','_')
+    ebay_data = ti.xcom_pull(task_ids=['search_ebay'])
+    dump = json.dumps(ebay_data, indent=4)
+    filename = f"{date}_ebay_seach.json"
+    filepath = f"datafiles/"
+    with open(filepath + filename,'w') as f:
+        f.write(dump)
+        f.close()
+
+def ebay_to_database(ti):
+    ebay_data = ti.xcom_pull(task_ids=['search_ebay'])
+    jsonStr = json.dumps(ebay_data)
+    print(jsonStr['searchResult']) 
+    print(type(jsonStr))
+    print('test')
+    return ebay_data
     
     
+        
 #DAG PythonOperator
 with DAG(
     default_args=default_args,
@@ -45,7 +75,7 @@ with DAG(
     schedule_interval='@daily',
 ) as dag:
     task1 = PythonOperator(
-        task_id = 'task1',
+        task_id = 'get_api_key',
         python_callable=get_api_key,
     )
     
@@ -54,4 +84,15 @@ with DAG(
         python_callable=search_ebay,
     )
     
-    task1 >> task2
+    task3 = PythonOperator(
+        task_id = 'ebay_to_json_file',
+        python_callable=ebay_to_json_file,
+    )
+    
+    task4 = PythonOperator(
+        task_id = 'ebay_to_database',
+        python_callable=ebay_to_database,
+        )
+    
+    task1 >> task2 >> [task3, task4] 
+    
