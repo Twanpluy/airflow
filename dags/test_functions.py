@@ -12,31 +12,31 @@ with open('dags/config/ebay.toml') as f:
     config = toml.load(f)
     
 api_key = config["ebay_api_keys_prod"]["app_id"]
+DATE = datetime.now().strftime("%Y-%m-%d")
+DATE = DATE.replace('-','_')
 
 
-def search_ebay():
+def search_ebay(date):
     try:
         api = Connection(appid=api_key, config_file=None, siteid='EBAY-NL')
         response = api.execute('findItemsByKeywords', {'keywords': 'moog 32',})
         dump = json.dumps(response.dict(), indent=4)
-        print(dump)
+        filename = f"{date}_ebay_seach.json"
+        filepath = f"datafiles/"
+        with open(filepath + filename,'w') as f:
+            f.write(dump)
+            f.close()
 
     except ConnectionError as e:
         print(e)
         print(e.response.dict())
 
-  
-def to_json_file():
-    date = datetime.now().strftime("%Y-%m-%d")
-    date = date.replace('-','_')
-    dump = 'test'
-    filename = f"{date}_ebay_seach.json"
-    filepath = f"datafiles/"
-    with open(filepath + filename,'w') as f:
-        f.write(dump)
-        f.close()
+
+def to_databasse(date):
+    print("to database")
+
         
-search_ebay()
+search_ebay(DATE)
 
 
 
