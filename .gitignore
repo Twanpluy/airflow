@@ -9,3 +9,4 @@ datafiles/2022_11_30_ebay_seach.json
 datafiles/2022_11_29_ebay_seach.json
 dags/Clean_PC/__pycache__/remove_downloads.cpython-38.pyc
 dags/__pycache__/search_ebay.cpython-38.pyc
+dags/__pycache__/

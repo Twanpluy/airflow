@@ -31,8 +31,6 @@ def taskflow():
         files = os.listdir(filepath)
         return files
 
-
-
     @task(task_id='log_files',retries=2)
     def log_files(files):
         print(files)
@@ -41,8 +39,7 @@ def taskflow():
     @task(task_id='remove_files',retries=2)
     def remove_files(files):
         os.remove(files)
-    
-    
+
     log_files(get_files) >> remove_files(get_files) 
 
 dag = taskflow()    
