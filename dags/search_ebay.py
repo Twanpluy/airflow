@@ -1,10 +1,6 @@
 """
 This DAG will search ebay for a given keyword and save the results to a json file.
 
-TODO: Add DAG to make api requests to ebay and save the results to a json file.
-TODO:   STEP 1: Create a DAG that will check if API is up.
-TODO:   STEP 2: Create a search request to ebay.
-TODO:   STEP 3: Save the results to a json file.
 """
 import json
 from datetime import datetime,timedelta
@@ -69,8 +65,8 @@ def ebay_to_database(ti):
 #DAG PythonOperator
 with DAG(
     default_args=default_args,
-    dag_id="print_api_key",
-    description="Print API Key",
+    dag_id="Get_ebay_synths",
+    description="Search ebay for modular synths",
     start_date=datetime(2021, 11, 18),
     schedule_interval='@daily',
 ) as dag:
